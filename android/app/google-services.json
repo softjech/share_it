@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "91392314712",
+    "firebase_url": "https://shareit-a7025.firebaseio.com",
+    "project_id": "shareit-a7025",
+    "storage_bucket": "shareit-a7025.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:91392314712:android:bb4a5e9d91fe7ef0f1292d",
+        "android_client_info": {
+          "package_name": "com.softjectico.shareit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "91392314712-8q4pq0f4nnnt6d9du3lidfmok4cnku7m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.softjectico.shareit",
+            "certificate_hash": "89d9f5bff3e4359ddc1077ff5a205ecba3b650fb"
+          }
+        },
+        {
+          "client_id": "91392314712-1qeuknsel74r150hhtcu77ulroupiom0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAQFxg3HBPRSR6RjULbV-jzQ3pXgoML7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "91392314712-1qeuknsel74r150hhtcu77ulroupiom0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "91392314712-hjft420bd7n7qptm68scp4qk9vdgepfn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.softjectico.fluttershare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

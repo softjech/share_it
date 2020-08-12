@@ -22,13 +22,13 @@ class _SearchState extends State<Search>
   handleSearch(String query) {
     flag = false;
     Future<QuerySnapshot> users = usersRef
-        .where('displayName', isGreaterThanOrEqualTo: query)
+        .where('displayName', isLessThanOrEqualTo: query)
         .getDocuments();
     users.then((value) {
       var x = value.documents;
       if (x.isEmpty) {
         users = usersRef
-            .where('displayName', isGreaterThanOrEqualTo: query)
+            .where('displayName', isLessThanOrEqualTo: query)
             .getDocuments();
       } else {
         flag = true;

@@ -161,7 +161,8 @@ class _TimelineState extends State<Timeline> {
   @override
   Widget build(context) {
     return Scaffold(
-      appBar: header(isAppTitle: true, context: context),
+      appBar: header(
+          isAppTitle: true, context: context, currentUser: widget.currentUser),
       body: RefreshIndicator(
         onRefresh: () => getTimeline(),
         child: buildTimeline(),

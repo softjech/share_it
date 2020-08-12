@@ -390,8 +390,9 @@ class _ProfileState extends State<Profile> {
                                   Navigator.push(context,
                                       MaterialPageRoute(builder: (context) {
                                     return ChatScreen(
-                                        //profileId: widget.profileId,
-                                        );
+                                      profileId: widget.profileId,
+                                      currentUser: currentUser,
+                                    );
                                   }));
                                 }),
                       ],

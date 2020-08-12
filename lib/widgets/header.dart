@@ -1,9 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shareit/chat.dart';
+import 'package:shareit/models/user.dart';
+import 'package:shareit/msgList.dart';
 
 AppBar header(
-    {bool isAppTitle = false, String appTitle = '', BuildContext context}) {
+    {bool isAppTitle = false,
+    String appTitle = '',
+    BuildContext context,
+    User currentUser}) {
   return AppBar(
     automaticallyImplyLeading: false,
     title: Text(
@@ -24,7 +28,9 @@ AppBar header(
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return ChatScreen();
+                      return MessageList(
+                        currentUser: currentUser,
+                      );
                     }),
                   );
                 })

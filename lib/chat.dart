@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shareit/pages/home.dart';
-import 'package:shareit/pages/search.dart';
-import 'package:shareit/widgets/progress.dart';
 import 'constants.dart';
 import 'models/user.dart';
 
@@ -12,43 +9,31 @@ int i = 0;
 final msgUserRef = Firestore.instance.collection('messageUser');
 
 class ChatScreen extends StatefulWidget {
+  final User currentUser;
+  final String profileId;
+  const ChatScreen({this.currentUser, this.profileId});
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  //final _auth = 1;// = FirebaseAuth.instance;
   String text;
   int messageCount = 0;
-  String currentUser = " ";
   final TextEditingController clearText = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
     getMessageCount();
-    //  getCurrentUser();
-  }
-
-  getCurrentUser() async {
-    final GoogleSignInAccount user = GoogleSignIn().currentUser;
-    currentUser = user.id;
-    // await getMessageCount();
-    try {
-      if (currentUser != null) {
-        //  loggedInUser = user;
-        getMessages();
-      }
-    } catch (e) {
-      print(e);
-    }
+    getMessageUser();
   }
 
   getMessageCount() async {
     QuerySnapshot snapshot = await messageRef
-        .document(currentUser)
+        .document(currentUser.id)
         .collection('users')
+        .document(widget.profileId)
+        .collection('messages')
         .getDocuments();
     setState(() {
       messageCount = snapshot.documents.length;
@@ -56,47 +41,75 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   getMessageUser() async {
+    DocumentSnapshot profileUserDoc =
+        await usersRef.document(widget.profileId).get();
+    DocumentSnapshot currentUserDoc =
+        await usersRef.document(currentUser.id).get();
+    User profileUserData = User.fromDocument(profileUserDoc);
+    User currentUserData = User.fromDocument(currentUserDoc);
     QuerySnapshot snapshot = await msgUserRef
-        .document(currentUser)
+        .document(currentUser.id)
         .collection('users')
         .getDocuments();
-    for (var userData in snapshot.documents) {}
-  }
-
-  buildSearchResult() {
-    return FutureBuilder(
-        future:
-            msgUserRef.document(currentUser).collection('users').getDocuments(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return circularProgress();
-          }
-          List<UserResult> searchResults = [];
-          snapshot.data.documents.forEach((doc) {
-            User user = User.fromDocument(doc);
-            UserResult searchResult = UserResult(
-              user: user,
-            );
-            searchResults.add(searchResult);
-          });
-          return ListView(
-            children: searchResults,
-          );
+    if (snapshot.documents.length == 0) {
+      msgUserRef
+          .document(currentUser.id)
+          .collection('users')
+          .document(widget.profileId)
+          .setData({
+        'bio': '',
+        'id': profileUserData.id,
+        'displayName': profileUserData.displayName,
+        'username': profileUserData.username,
+        'photoUrl': profileUserData.photoUrl,
+        'email': profileUserData.email,
+      });
+      msgUserRef
+          .document(widget.profileId)
+          .collection('users')
+          .document(currentUser.id)
+          .setData({
+        'bio': '',
+        'id': currentUserData.id,
+        'displayName': currentUserData.displayName,
+        'username': currentUserData.username,
+        'photoUrl': currentUserData.photoUrl,
+        'email': currentUserData.email,
+      });
+    } else {
+      List<DocumentSnapshot> docList = snapshot.documents;
+      if (!docList.contains(widget.profileId)) {
+        msgUserRef
+            .document(currentUser.id)
+            .collection('users')
+            .document(widget.profileId)
+            .setData({
+          'bio': '',
+          'id': profileUserData.id,
+          'displayName': profileUserData.displayName,
+          'username': profileUserData.username,
+          'photoUrl': profileUserData.photoUrl,
+          'email': profileUserData.email,
         });
-  }
-
-  getMessages() async {
-    QuerySnapshot snapshot = await messageRef
-        .document(currentUser)
-        .collection('group')
-        .getDocuments();
-    for (var msg in snapshot.documents) {
-      print(msg.data);
+        msgUserRef
+            .document(widget.profileId)
+            .collection('users')
+            .document(currentUser.id)
+            .setData({
+          'bio': '',
+          'id': currentUserData.id,
+          'displayName': currentUserData.displayName,
+          'username': currentUserData.username,
+          'photoUrl': currentUserData.photoUrl,
+          'email': currentUserData.email,
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.profileId);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -105,7 +118,6 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                //              _auth.signOut();
                 Navigator.pop(context);
               }),
         ],
@@ -117,7 +129,8 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            MessageStream(),
+            MessageStream(
+                profileId: widget.profileId, currentUserId: currentUser.id),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -129,18 +142,39 @@ class _ChatScreenState extends State<ChatScreen> {
                       onChanged: (value) {
                         text = value;
                       },
+                      style: TextStyle(color: Colors.lightBlueAccent),
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
                   FlatButton(
                     onPressed: () {
+                      messageRef
+                          .document(currentUser.id)
+                          .collection('users')
+                          .document(widget.profileId)
+                          .collection('messages')
+                          .add({
+                        'index': messageCount,
+                        'text': text,
+                        'id': currentUser.id,
+                        'sender': currentUser.username,
+                        'timeStamp': timeStamp,
+                      });
+                      messageRef
+                          .document(widget.profileId)
+                          .collection('users')
+                          .document(currentUser.id)
+                          .collection('messages')
+                          .add({
+                        'index': messageCount,
+                        'text': text,
+                        'id': currentUser.id,
+                        'sender': currentUser.username,
+                        'timeStamp': timeStamp,
+                      });
                       setState(() {
                         clearText.clear();
-                      });
-                      usersRef.add({
-                        'text': text,
-                        //'sender': loggedInUser.email,
-                        'timeStamp': timeStamp,
+                        getMessageCount();
                       });
                     },
                     child: Text(
@@ -159,10 +193,20 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class MessageStream extends StatelessWidget {
+  final String profileId, currentUserId;
+
+  const MessageStream({this.profileId, this.currentUserId});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        /*stream: usersRef.orderBy('timeStamp', descending: true).snapshots(),
+      stream: messageRef
+          .document(currentUserId)
+          .collection('users')
+          .document(profileId)
+          .collection('messages')
+          .orderBy('index', descending: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -176,8 +220,9 @@ class MessageStream extends StatelessWidget {
         for (var msg in messages) {
           final messageText = msg.data['text'];
           final messageSender = msg.data['sender'];
+          final senderId = msg.data['id'];
           MessageBubble messageBubble;
-          if (messageSender == loggedInUser.email) {
+          if (senderId == currentUserId) {
             messageBubble = MessageBubble(
                 messageText: messageText,
                 messageSender: messageSender,
@@ -197,8 +242,8 @@ class MessageStream extends StatelessWidget {
             children: messageBubbles,
           ),
         );
-      },*/
-        );
+      },
+    );
   }
 }
 
